@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARLY DETECTION OF DIABETES AND BONE DISORDERS MONITORING</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f7f9;
+            background-image: linear-gradient(45deg, #92c9b3, #f7971e);
+            background-size: 200% 200%;
+            animation: gradientShift 10s infinite alternate;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .live-stream-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .live-stream {
+            width: 200%;
+            height: 1200px;
+            border: none;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>EARLY DETECTION OF DIABETES AND BONE DISORDERS MONITORING</h1>
+    <table>
+        <tr>
+            <th>PIEZO</th>
+            <th>TEMPERATURE</th>
+            <th>HUMIDITY</th>
+            <th>ANGLE</th>
+            <th>FLEX</th>
+            <th>Result</th>
+        </tr>
+        <tr id="dataRow">
+            <td>Loading...</td>
+            <td>Loading...</td>
+            <td>Loading...</td>
+            <td>Loading...</td>
+            <td>Loading...</td>
+            <td>Loading...</td>
+        </tr>
+    </table>
+    <div class="live-stream-container">
+        <h2>Live Stream</h2>
+        <iframe class="live-stream" id="liveStreamFrame"></iframe>
+    </div>
+
+    <!-- Prescription Form -->
+    <h2>Enter Prescription</h2>
+    <form id="prescriptionForm">
+        <label for="prescription">Prescription:</label><br>
+        <textarea id="prescription" name="prescription" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="Submit Prescription">
+    </form>
+
+    <script>
+        const channelId = '666774';
+        const apiKey = 'LCVF08B4S13Q5FWX';
+
+        const dataRow = document.getElementById('dataRow');
+        const liveStreamContainer = document.querySelector('.live-stream-container');
+        const liveStreamFrame = document.getElementById('liveStreamFrame');
+
+        fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}`)
+            .then(response => response.json())
+            .then(data => {
+                const latestEntry = data.feeds[data.feeds.length - 1];
+                const Temp = latestEntry.field1;
+                const BPM = latestEntry.field2;
+                const SPO2 = latestEntry.field3;
+                const PPG = latestEntry.field4;
+                const pH = latestEntry.field5;
+                const result = latestEntry.field6;
+
+                dataRow.innerHTML = `
+                    <td>${Temp}</td>
+                    <td>${BPM}</td>
+                    <td>${SPO2}</td>
+                    <td>${PPG}</td>
+                    <td>${pH}</td>
+                    <td>${result}</td>
+                `;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                dataRow.innerHTML = '<td colspan="6">Error loading data</td>';
+            });
+
+        // Prescription Form Submission
+        const prescriptionForm = document.getElementById('prescriptionForm');
+        prescriptionForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const prescription = document.getElementById('prescription').value;
+            submitPrescription(prescription);
+        });
+
+        function submitPrescription(prescription) {
+            const prescriptionChannelId = '596974';
+            const prescriptionApiKey = 'ZKD2A60PEXQ13T8U';
+
+            fetch(`https://api.thingspeak.com/update.json?api_key=${prescriptionApiKey}&field1=${encodeURIComponent(prescription)}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Prescription submitted successfully:', data);
+                alert('Prescription submitted successfully!');
+            })
+            .catch(error => {
+                console.error('Error submitting prescription:', error);
+                alert('Error submitting prescription. Please try again.');
+            });
+        }
+    </script>
+</body>
+
+</html>
